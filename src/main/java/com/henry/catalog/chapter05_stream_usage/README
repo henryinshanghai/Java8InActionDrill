@@ -1,0 +1,80 @@
+Stream内部迭代的特征：
+1 省去了开发者的for循环编码；
+2 能够在背后执行一些优化 - 比如并行执行代码(这点外部迭代就做不到);
+
+
+Stream中的数据查询操作：
+    筛选
+    切片
+    映射
+    查找
+    匹配
+    规约
+
+---
+筛选与切片
+
+筛选： filter() + Predicate<T>
+定制需求：
+    筛选元素各异的流 - distinct()方法
+    截短流 - limit(n)方法
+    跳过前n个元素 - skip(n)方法
+
+---
+映射：从对象A 得到 对象B；
+实现手段: map() 或者 flatMap()
+
+用法：
+    1 把方法 应用到 流中的每一个元素上： - map(<method_reference>)
+    2 把 每个元素得到的流 扁平化为一个单一的流； - flatMap(<method_reference>)
+        原理：1 把一个流中的每一个值都转换成另一个流； 2 把所有的流连接起来，形成一个新的流。
+
+
+---
+查找与匹配： 用于回答是否存在 满足xxx条件的元素
+实现手段： allMatch()、anyMatch()、noneMatch()、findFirst()、findAny()
+
+用法：
+    1 检查 谓语是否 至少匹配一个元素； - anyMatch()
+    2 检查 谓语 是否匹配所有的元素； - allMatch()
+    3 检查 谓语 是否没有匹配到任何一个元素； - noneMatch()
+
+    4 返回当前流中的任一个元素 - findAny();
+    特征：
+        1 返回的是元素，而不是一个布尔值；
+        2 一般需要结合其他的Stream API一起使用。
+
+---
+归约 aka 合而为一
+
+终端操作的返回值类型：
+    布尔类型 - allMatch()
+    void - forEach()
+    Optional对象 - findAny()
+    List - collect(xxx)
+
+把流中所有的元素组合起来，实现更加复杂的查询逻辑：归约操作；
+特征：会把流中的所有元素 反复结合起来，最终得到一个值；
+应用：
+    1 元素求和；
+    2 求最值；
+
+fun fact:
+1 map、filter等属于 无状态操作 aka 执行操作时，没有内部状态；
+2 reduce、sum、max等操作属于 有状态操作 - 用作累计操作的中间值；
+3 sort、distinct也属于有状态操作 - 虽然它们也会返回一个流，但是执行它们的前提时，流中的所有元素都已经在内存中了(否则无法排序/去重)
+
+===
+数值流
+
+作用：用于避免数据计算时的拆装箱成本；
+手段：IntStream、DoubleStream、LongStream；
+特征：
+    一般的流中间操作返回 Stream<T>，而数值流对应的操作返回 特化后的流(IntStream...)；
+用法：
+    1 映射到 数值流； - mapToInt() 这样就能使用IntStream提供的sum()方法等
+    2 转换回 对象流/一般的流； - intStream.boxed()
+    3 使用数值流 来 生成数据范围； - IntStream.range() 、rangeClosed() 【also LongStream】
+        特征：
+            1 (<start_value>, <end_value>)
+            2 range()方法左闭右开，rangeClosed()方法左右皆闭。
